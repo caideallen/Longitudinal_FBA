@@ -1,0 +1,28 @@
+## Separate older peeps for fd
+chmod +x c_40plus_fd.sh
+./c_40plus_fd.sh
+# now log_fc
+chmod +x c_40plus_fc.sh
+./c_40plus_fc.sh
+# finally fdc
+chmod +x c_40plus_fdc.sh
+./c_40plus_fdc.sh
+
+### Recreating what that got deleted
+# Fixel mask
+fod2fixel -mask template_mask.mif -fmls_peak_value 0.10 wmfod_template.mif fixel_mask
+#generate connectivity matrix
+fixelconnectivity fixel_mask/ tracks_2_million_sift.tck matrix/
+
+Set up baby
+ls fdc_smooth > files.txt
+
+# Now we do the gd stats, no age by group, corrected for age/sex
+fixelcfestats fd_smooth/ files.txt design_40.txt contrast_40.txt matrix/ stats_fd_40/ 
+fixelcfestats log_fc_smooth/ files.txt design_40.txt contrast_40.txt matrix/ stats_log_fc_40/ 
+fixelcfestats fdc_smooth/ files.txt design_40.txt contrast_40.txt matrix/ stats_fdc_40/
+
+# Stats WITH age by group
+fixelcfestats fd_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_fd_40_agexgroup/ 
+fixelcfestats log_fc_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_log_fc_40_agexgroup/ 
+fixelcfestats fdc_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_fdc_40_agexgroup/
