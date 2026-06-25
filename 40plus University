@@ -1,0 +1,183 @@
+ml mamba
+source activate myENV
+cd /scratch/cbayouth/40plus_Dicoms
+
+
+for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10013 10014 10015 10016 10017 10018 10019 10020 10021 10029 10036 10040 10042 10044 10046 10050 10052 10057 10059 10060 10061 10069 10076 10077 10079 10086 10088 10090 10091 10092 10093 10096 10101 10103 10106 10107 10109 10112 10113 10114 10115 10119 10124 10129 10136 10137 10147 11001 11003 11006 11007 11008 11009 11012 11013 11014 11016 11017 11019 11021 11027 11028 11030 11031 11032 11033 11038 11039 11041 11042 11044 11046 11054 11055 11056 11059 11061 11070 11071 11074 11081 11082 11084 11085 11086 11087 11088 11092; do
+mrconvert sub-${ID}/ses-01/*/ sub-${ID}/ses-01/dwi.mif -vox 2 -coord 3 '0:1:32'
+mrconvert sub-${ID}/ses-02/*/ sub-${ID}/ses-02/dwi.mif -vox 2 -coord 3 '0:1:32'
+mrconvert sub-${ID}/ses-03/*/ sub-${ID}/ses-03/dwi.mif -vox 2 -coord 3 '0:1:32'
+done < try1.txt
+
+mkdir denoised
+for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10013 10014 10015 10016 10017 10018 10019 10020 10021 10029 10036 10040 10042 10044 10046 10050 10052 10057 10059 10060 10061 10069 10076 10077 10079 10086 10088 10090 10091 10092 10093 10096 10101 10103 10106 10107 10109 10112 10113 10114 10115 10119 10124 10129 10136 10137 10147 11001 11003 11006 11007 11008 11009 11012 11013 11014 11016 11017 11019 11021 11027 11028 11030 11031 11032 11033 11038 11039 11041 11042 11044 11046 11054 11055 11056 11059 11061 11070 11071 11074 11081 11082 11084 11085 11086 11087 11088 11092; do
+dwidenoise sub-${ID}/ses-01/dwi.mif -noise denoised/${ID}v1_denoised.mif
+dwidenoise sub-${ID}/ses-02/dwi.mif -noise denoised/${ID}v2_denoised.mif
+done
+
+mkdir degibbs
+mkdir mrcalc
+for_each denoised/* : mrdegibbs IN degibbs/NAME
+
+mkdir residuals
+for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10013 10014 10015 10016 10017 10018 10019 10020 10021 10029 10036 10040 10042 10044 10046 10050 10052 10057 10059 10060 10061 10069 10076 10077 10079 10086 10088 10090 10091 10092 10093 10096 10101 10103 10106 10107 10109 10112 10113 10114 10115 10119 10124 10129 10136 10137 10147 11001 11003 11006 11007 11008 11009 11012 11013 11014 11016 11017 11019 11021 11027 11028 11030 11031 11032 11033 11038 11039 11041 11042 11044 11046 11054 11055 11056 11059 11061 11070 11071 11074 11081 11082 11084 11085 11086 11087 11088 11092; do
+mrcalc sub-${ID}/ses-01/dwi.mif degibbs/${ID}v1_denoised.mif -subtract residuals/${ID}v1_res.mif
+mrcalc sub-${ID}/ses-02/dwi.mif degibbs/${ID}v2_denoised.mif -subtract residuals/${ID}v2_res.mif
+done
+
+ml fsl
+mkdir preproc
+for_each degibbs2/*: dwifslpreproc IN preproc/NAME -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
+
+mkdir eddy_tempmask
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############NONE OF THIS WORKS#################
+# format DICOMs into mif file voxel size 2
+  mrconvert DTI32/ ${ID}_vox.mif -vox 2 -coord 3 '0:1:32' -grad -export_grad_mrtrix path -export_grad_fsl bvecs_path bvals_path
+# denoise images
+  dwidenoise ${ID}_vox.mif -noise v2_denoised.mif
+# calculate residuals
+  mrcalc v2_denoised.mif v2vox.mif -subtract v2_res.mif
+# fsl preprocessing
+  dwifslpreproc v2vox.mif ${ID}_v2preproc.mif -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
+  cd ../
+done < ID.txt
+
+mkdir eddy_tempmask
+while read ID; do
+#this badboy is causing clipping issues PFC etc, probably due to denoising 
+  dwi2mask ${ID}/${ID}_v2preproc.mif - | maskfilter - dilate - | mrconvert - eddy_tempmask/eddy_mask.nii -datatype float32 -strides -1,+2,+3 
+done < ID.txt
+
+module unload fsl
+ml ants
+
+# bias correction for all subjects which is causing contrast issues
+mkdir ants
+while read ID; do
+    echo "Processing sucject: ${ID}"  
+# this deals with the shimming. bright white areas
+dwibiascorrect ${ID}/${ID}_v2preproc.mif ants/${ID}_v2preproc_unbiased.mif
+done < ID.txt
+
+# comment
+dwinormalise group ants/ eddy_tempmask/ dwi_output/ fa_template.mif fa_template_wm_mask.mif 
+
+# eddy_afterants was done bc we need it for the poptemplate, and original eddy wasnt normalized
+mkdir wmresponse
+mkdir dwimask
+mkdir eddy_afterants
+## 
+while read ID; do
+    echo "Processing ID: $ID"
+    dwi2response tournier dwi_output/${ID}_v2preproc_unbiased.mif wmresponse/${ID}_wm_response.txt 
+    dwi2mask dwi_output/${ID}_v2preproc_unbiased.mif dwimask/${ID}_dwimask.mif 
+    dwi2mask dwi_output/${ID}_v2preproc_unbiased.mif - | maskfilter - dilate - | mrconvert - eddy_afterants/${ID}_eddy_mask.nii -datatype float32 -strides -1,+2,+3 
+done < ID.txt
+
+## generate average wm response
+responsemean wmresponse/*_wm_response.txt group_average_response.txt
+
+
+mkdir wmfod
+while read ID; do
+    echo "Generating FOD: $ID"
+dwi2fod csd dwi_output/${ID}_v2preproc_unbiased.mif group_average_response.txt wmfod/${ID}_wmfod.mif 
+done < ID.txt
+
+## create population template
+population_template wmfod/ -mask_dir eddy_afterants/ wmfod_template.mif  
+
+# if youre having issues with population template (large shears) use this to check the mask alignment. Change files as nessicary
+### mrcat linear_template06_c0.mif $(mrgrid input_transformed_c0/0089.mif regrid -template linear_template05_c0.mif -) -axis 4 - | mrview - -roi.load mask_transformed/0089.mif -roi.opacity 0.3
+
+# Register to template
+mkdir subj2temp
+mkdir temp2subj
+mkdir maskintemp
+# masks to template 
+while read ID; do
+mrregister wmfod/${ID}_wmfod.mif -mask1 dwimask/${ID}_dwimask.mif wmfod_template.mif -nl_warp subj2temp/${ID}_subject2template_warp.mif temp2subj/${ID}_template2subject_warp.mif
+mrtransform dwimask/${ID}_dwimask.mif -warp subj2temp/${ID}_subject2template_warp.mif -interp nearest -datatype bit maskintemp/${ID}_maskintemp.mif
+done < ID.txt
+# calculate intersections of all masks
+mrmath maskintemp/* min template_mask.mif -datatype bit
+# Fixel mask
+fod2fixel -mask template_mask.mif -fmls_peak_value 0.10 wmfod_template.mif fixel_mask
+
+mkdir fodintemp_not_reoriented
+while read ID; do
+mrtransform wmfod/${ID}_wmfod.mif -warp subj2temp/${ID}_subject2template_warp.mif -reorient_fod no fodintemp_not_reoriented/${ID}_fodintemp_NOT_REORIENTED.mif
+done < ID.txt
+
+# fixel reorient and fixel to template
+mkdir fixel_in_temp
+mkdir fixelintemp_not_reoriented
+while read ID; do
+fod2fixel -mask template_mask.mif fodintemp_not_reoriented/${ID}_fodintemp_NOT_REORIENTED.mif fixelintemp_not_reoriented/${ID}_fixel_in_template_space_NOT_REORIENTED -afd ${ID}_fd.mif
+fixelreorient fixelintemp_not_reoriented/${ID}_fixel_in_template_space_NOT_REORIENTED subj2temp/${ID}_subject2template_warp.mif fixel_in_temp/${ID}_fixel_in_template_space
+done < ID.txt
+
+# calculate fd and fc for statistical analysis
+mkdir fd
+mkdir fc
+while read ID; do
+fixelcorrespondence fixel_in_temp/${ID}_fixel_in_template_space/${ID}_fd.mif fixel_mask fd/ ${ID}.mif
+warp2metric subj2temp/${ID}_subject2template_warp.mif -fc fixel_mask fc/${ID} ${ID}.mif
+done < ID.txt
+
+# calculate log fc, I copied the files from fc to log_fc with SOLs gooey interface instead of shell cause i had to check shit anyway, so I'll add that as code later fuck you
+mkdir log_fc/
+cp fc/index.mif fdc
+cp fc/directions.mif fdc
+
+
+# Calculate logfc
+while read ID; do
+ mrcalc fc/${ID}.mif -log log_fc/${ID}.mif
+done < ID.txt
+# fdc setup
+mkdir fdc
+cp fc/index.mif fdc
+cp fc/directions.mif fdc
+
+# after all that fuckery now we finally calculate fdc
+while read ID; do
+mrcalc fd/${ID}.mif fc/${ID}.mif -mult fdc/${ID}.mif
+done < ID.txt
+
+### whole brain tractography
+tckgen -angle 22.5 -maxlen 250 -minlen 10 -power 1.0 wmfod_template.mif -seed_image template_mask.mif -mask template_mask.mif -select 20000000 -cutoff 0.10 tracks_20_million.tck
+tcksift tracks_20_million.tck wmfod_template.mif tracks_2_million_sift.tck -term_number 2000000
+#generate connectivity matrix
+fixelconnectivity fixel_mask/ tracks_2_million_sift.tck matrix/
+
+#smooth it out
+fixelfilter fd smooth fd_smooth -matrix matrix/
+fixelfilter log_fc smooth log_fc_smooth -matrix matrix/
+fixelfilter fdc smooth fdc_smooth -matrix matrix/
+
+# get the file names for analysis, I manually deleted the direction and index files from this list
+## file names are the same for fc/fdc you only need one copy
+ls fdc_smooth > files.txt
+
+######## Here you'll create the contrast and design matrix. 
+ Two group difference (two sample unpaired t test)
+## ASD is 1, NT -1. 1st measure is Wait IS THAT FUCKING RIGHT???? FUCK THATS HOW IT GOT WEIRD. I DONT EVEN KNOW ANYMORE.
+fixelcfestats fd_smooth/ files.txt design_group.txt contrast_group.txt matrix/ stats_fd_nocov/ 
+fixelcfestats log_fc_smooth/ files.txt design_group.txt contrast_group.txt matrix/ stats_logfc_nocov/ 
+fixelcfestats fdc_smooth/ files.txt design_group.txt contrast_group.txt matrix/ stats_fdc_nocov/
