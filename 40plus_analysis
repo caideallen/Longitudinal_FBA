@@ -26,3 +26,6 @@ fixelcfestats fdc_smooth/ files.txt design_40.txt contrast_40.txt matrix/ stats_
 fixelcfestats fd_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_fd_40_agexgroup/ 
 fixelcfestats log_fc_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_log_fc_40_agexgroup/ 
 fixelcfestats fdc_smooth/ files.txt design_40_agexgroup.txt contrast_40_agexgroup.txt matrix/ stats_fdc_40_agexgroup/
+
+fixelcfestats log_fc_smooth/ files_agexgroup_etiv.txt design_agexgroup_etiv.txt contrast_agexgroup_etiv.txt matrix/ stats_log_fc_agexgroup_etiv/ 
+fixelcfestats fdc_smooth/ iles_agexgroup_etiv.txt design_agexgroup_etiv.txt contrast_agexgroup_etiv.txt atrix/ stats_fdc_agexgroup_etiv/
