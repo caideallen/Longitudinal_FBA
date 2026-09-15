@@ -19,17 +19,26 @@ mkdir degibbs
 mkdir mrcalc
 for_each denoised/* : mrdegibbs IN degibbs/NAME
 
+## Create residuals
 mkdir residuals
 for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10013 10014 10015 10016 10017 10018 10019 10020 10021 10029 10036 10040 10042 10044 10046 10050 10052 10057 10059 10060 10061 10069 10076 10077 10079 10086 10088 10090 10091 10092 10093 10096 10101 10103 10106 10107 10109 10112 10113 10114 10115 10119 10124 10129 10136 10137 10147 11001 11003 11006 11007 11008 11009 11012 11013 11014 11016 11017 11019 11021 11027 11028 11030 11031 11032 11033 11038 11039 11041 11042 11044 11046 11054 11055 11056 11059 11061 11070 11071 11074 11081 11082 11084 11085 11086 11087 11088 11092; do
 mrcalc sub-${ID}/ses-01/dwi.mif degibbs/${ID}v1_denoised.mif -subtract residuals/${ID}v1_res.mif
 mrcalc sub-${ID}/ses-02/dwi.mif degibbs/${ID}v2_denoised.mif -subtract residuals/${ID}v2_res.mif
 done
 
+
+## Preprocessing
 ml fsl
 mkdir preproc
 for_each degibbs2/*: dwifslpreproc IN preproc/NAME -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
 
-mkdir eddy_tempmask
+## Estimate temporary mask for each participant. 
+mkdir eddy_tempmask1
+for_each preproc/* : dwi2mask IN eddy_tempmask1/NAME
+
+##ANTS
+for_each * : dwibiascorrect ants IN/IN/dwi_denoised_unringed_preproc.mif IN/IN/dwi_denoised_unringed_preproc_unbiased.mif
+
 
 
 
