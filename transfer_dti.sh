@@ -1,14 +1,14 @@
 #!/bin/bash
 # transfer_dti.sh
-# Usage: ./transfer_dti.sh with_v2.txt
+# Usage: ./transfer_dti.sh
 
-ID_FILE="$1"
-SRC_BASE="/storage/Aging/Aging_In_ASD/Dicom_Master"
-DEST_HOST="myname@supercomputer.edu"
+ID_FILE="with_v2.txt"
+SRC_BASE="../../storage/Aging/Aging_In_ASD/Dicom_Master"
+DEST_HOST="supercomputer"
 DEST_BASE="/scratch/myname/40plus_Dicoms"
 
-if [[ -z "$ID_FILE" || ! -f "$ID_FILE" ]]; then
-    echo "Usage: $0 <path_to_ids.txt>"
+if [[ ! -f "$ID_FILE" ]]; then
+    echo "ID file not found: $ID_FILE"
     exit 1
 fi
 
