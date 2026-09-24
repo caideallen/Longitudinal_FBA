@@ -25,7 +25,7 @@ cd /scratch/cbayouth/40plus_Dicoms
 
 # Convert to mif
 for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10013 10014 10015 10016 10017 10018; do
-    for n in 01 02 03 04 05 06; do
+    for n in 03 04 05 06; do
         SES_DIR="sub-${ID}/ses-${n}"
         # skip if the session directory doesn't exist
         if [[ ! -d "$SES_DIR" ]]; then
