@@ -4,7 +4,7 @@
 
 ID_FILE="$1"
 SRC_BASE="/storage/Aging/Aging_In_ASD/Dicom_Master"
-DEST_HOST="cbayouth@sol.asu.edu"
+DEST_HOST="myname@supercomputer.edu"
 DEST_BASE="/scratch/myname/40plus_Dicoms"
 
 if [[ -z "$ID_FILE" || ! -f "$ID_FILE" ]]; then
