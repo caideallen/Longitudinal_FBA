@@ -2,13 +2,13 @@
 # transfer_dti.sh
 # Usage: ./transfer_dti.sh
 
-ID_FILE="/home/name/with_v2.txt"
-SRC_BASE="/storage/Aging/Aging_In_ASD/Dicom_Master"
-DEST_HOST="cbayouth@sol.asu.edu"
+ID_FILE="with_v2.txt"
+SRC_BASE="../../storage/Aging/Aging_In_ASD/Dicom_Master"
+DEST_HOST="supercomputer"
 DEST_BASE="/scratch/myname/40plus_Dicoms"
 
 # ControlMaster socket setup — lets all ssh/scp calls share ONE authenticated connection
-CTRL_DIR="/home/name/.ssh/controlmasters"
+CTRL_DIR="/.ssh/controlmasters"
 mkdir -p "$CTRL_DIR"
 CTRL_PATH="${CTRL_DIR}/%r@%h:%p"
 SSH_OPTS=(-o ControlMaster=auto -o ControlPath="$CTRL_PATH" -o ControlPersist=10m)
