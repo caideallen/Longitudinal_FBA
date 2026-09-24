@@ -2,6 +2,8 @@
 # transfer_dti.sh
 # Usage: ./transfer_dti.sh
 
+### requires chmod u+rx transfer_dti.sh to run ##########################
+
 ID_FILE="with_v2.txt"
 SRC_BASE="../../storage/Aging/Aging_In_ASD/Dicom_Master"
 DEST_HOST="supercomputer"
