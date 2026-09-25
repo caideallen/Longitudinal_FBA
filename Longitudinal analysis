@@ -30,12 +30,9 @@ for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 1001
         fi
         echo ">> Denoising and Giibs sub-${ID} ses-${n} - Step 1"
         dwidenoise "${SES_DIR}/dwi.mif"  "${SES_DIR}/step1_denoised.mif"
-        mredegibbs "${SES_DIR}/step1_denoised.mif" "${SES_DIR}/step1_unringed.mif"         
- echo ">> Denoising sub-${ID} ses-${n} - Step 1"
-
- echo ">> Denoising sub-${ID} ses-${n} - Step 1"
+        mrdegibbs "${SES_DIR}/step1_denoised.mif" "${SES_DIR}/step1_unringed.mif"         
+ echo ">> FSL preproc sub-${ID} ses-${n} - Step 2"
+dwifslpreproc "${SES_DIR}/step1_unringed.mif" "${SES_DIR}/step2_fsl.mif" -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
     done
 done
 
-
--axes 0,1
