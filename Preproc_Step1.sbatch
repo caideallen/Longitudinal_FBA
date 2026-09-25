@@ -3,7 +3,7 @@
 #SBATCH -N 4           # number of nodes (3 in this example)
 #SBATCH -n 8           # number of tasks (8 tasks in this example)
 #SBATCH -c 1           # number of cores-per-task (defaults to 1 if not specified)
-#SBATCH -t 0-01:00:00  # time in d-hh:mm:ss
+#SBATCH -t 0-08:00:00  # time in d-hh:mm:ss
 #SBATCH -p public      # partition
 #SBATCH -q public      # QOS
 #SBATCH -o slurm.%j.out # file to save job's STDOUT (%j = JobId)
