@@ -2,7 +2,7 @@
 
 #SBATCH -N 1           # number of nodes (3 in this example)
 #SBATCH -c 2           # number of cores-per-task (defaults to 1 if not specified)
-#SBATCH --mem=85GB
+#SBATCH --mem=85GB     # memory nbetween cores
 #SBATCH -a 1-99        # number of jobs in array (i think)    
 #SBATCH -t 0-01:00:00  # time in d-hh:mm:ss
 #SBATCH -p public      # partition
