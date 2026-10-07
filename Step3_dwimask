@@ -58,5 +58,6 @@ for n in 01 02 03 04 05 06; do
             continue
         fi
  echo ">> tempmask preproc sub-${ID} ses-${n} - Step 2"
-dwi2mask "${SES_DIR}/step2_fsl.mif" - | maskfilter - dilate - | mrconvert - "${SES_DIR}/step3_tempmask.mif" -datatype float32 -strides -1,+2,+3 
+dwi2mask "${SES_DIR}/step2_fsl.mif" "${SES_DIR}/step3.1_tempmask.mif" 
+maskfilter "${SES_DIR}/step3.1_tempmask.mif" dilate "${SES_DIR}/step3.2_dialatemask.mif" 
     done
