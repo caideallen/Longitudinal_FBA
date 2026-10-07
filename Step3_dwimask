@@ -44,7 +44,7 @@ for n in 01 02 03 04 05 06; do
 
 ml mamba
 source activate myENV
-ml fsl
+ml ants
 
 readonly manifest="with_v2" 
 readonly ID=$(getline $SLURM_ARRAY_TASK_ID "$manifest")
@@ -60,4 +60,5 @@ for n in 01 02 03 04 05 06; do
  echo ">> tempmask preproc sub-${ID} ses-${n} - Step 2"
 dwi2mask "${SES_DIR}/step2_fsl.mif" "${SES_DIR}/step3.1_tempmask.mif" 
 maskfilter "${SES_DIR}/step3.1_tempmask.mif" dilate "${SES_DIR}/step3.2_dialatemask.mif" 
+dwibiascorrect "${SES_DIR}/step3.2_dialatemask.mif" "${SES_DIR}/step3.3_biascorreced.mif"
     done
