@@ -17,18 +17,3 @@ ml ants
 
 dwinormalise group dwinormalise/dwi_input/ dwinormalise/mask_input/ dwinormalise/dwi_output/ dwinormalise/fa_template.mif dwinormalise/fa_template_wm_mask.mif
 
-readonly manifest="with_v2" 
-readonly ID=$(getline $SLURM_ARRAY_TASK_ID "$manifest")
-
-## create mask and dialate it, then preform ants bias correction
-for n in 01 02 03 04 05 06; do
-        SES_DIR="sub-${ID}/ses-${n}"
-        # skip if the session directory doesn't exist
-        if [[ ! -d "$SES_DIR" ]]; then
-            echo "-- Skipping sub-${ID} ses-${n} (no session directory)"
-            continue
-        fi
-
-ln -sr "${SES_DIR}/step3.3_ants.mif" dwinormalise/dwi_input/${ID}v${n}.mif
-ln -sr "${SES_DIR}/step3.2_dialatemask.mif" dwinormalise/mask_input/${ID}v${n}.mif
-done
