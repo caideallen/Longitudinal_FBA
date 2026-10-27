@@ -12,14 +12,12 @@
 #SBATCH --mail-user="$u@asu.edu"
 #SBATCH --export=NONE   # Purge the job-submitting shell environment
 
-ml mamba
-source activate myENV
-
+## This is me being lazy and not changing the code and taking up recources than I should cause I don't want to figure out how to code this otherwise
 
 readonly manifest="with_v2" 
 readonly ID=$(getline $SLURM_ARRAY_TASK_ID "$manifest")
 
-## create mask and dialate it, then preform ants bias correction
+## Ya boi iz lazy 
 for n in 01 02 03 04 05 06; do
         SES_DIR="sub-${ID}/ses-${n}"
         # skip if the session directory doesn't exist
@@ -31,3 +29,16 @@ for n in 01 02 03 04 05 06; do
 ln -sr "${SES_DIR}/step3.3_ants.mif" dwinormalise/dwi_input/${ID}v${n}.mif
 ln -sr "${SES_DIR}/step3.2_dialatemask.mif" dwinormalise/mask_input/${ID}v${n}.mif
 done
+
+## Link back from output
+#        for n in 01 02 03 04 05 06; do
+       #        SES_DIR="sub-${ID}/ses-${n}"
+        #         skip if the session directory doesn't exist
+      #           if [[ ! -d "$SES_DIR" ]]; then
+     #                echo "-- Skipping sub-${ID} ses-${n} (no session directory)"
+      #               continue
+ #                fi
+#         
+#         ln -sr "${SES_DIR}/step3.3_ants.mif" dwinormalise/dwi_input/${ID}v${n}.mif
+#         ln -sr "${SES_DIR}/step3.2_dialatemask.mif" dwinormalise/mask_input/${ID}v${n}.mif
+#         done
