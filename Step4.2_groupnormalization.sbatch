@@ -17,3 +17,6 @@ ml ants
 
 dwinormalise group dwinormalise/dwi_input/ dwinormalise/mask_input/ dwinormalise/dwi_output/ dwinormalise/fa_template.mif dwinormalise/fa_template_wm_mask.mif
 
+## check the scale factors applied during normalization. Make sure mean scale factors are the same between groups, if not it might bias AFD analysis.
+mrinfo ../dwinormalise/dwi_output/* -property dwi_norm_scale_factor > scalefactor.txt
+
