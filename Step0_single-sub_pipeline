@@ -4,12 +4,12 @@ source activate myENV
 cd /scratch/cbayouth/Longitudinal FBA
 
 #Step 1
-mrconvert sub-10001/ses-01/*/ sub-10001/ses-01/dwi.mif -vox 2 -coord 3 '0:1:32'
-dwidenoise sub-10001/ses-01/dwi.mif  sub-10001/ses-01/step1_denoised.mif
-mrdegibbs sub-10001/ses-01/step1_denoised.mif" sub-10001/ses-01/step1_unringed.mif"         
+mrconvert sub-10001/ses-04/*/ sub-10001/ses-04/dwi.mif -vox 2 -coord 3 '0:1:32'
+dwidenoise sub-10001/ses-04/dwi.mif  sub-10001/ses-04/step1_denoised.mif
+mrdegibbs sub-10001/ses-04/step1_denoised.mif" sub-10001/ses-04/step1_unringed.mif"         
 
 #step 2
-dwifslpreproc sub-10001/ses-01/step1_unringed.mif sub-10001/ses-01/step2_fsl.mif -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
+dwifslpreproc sub-10001/ses-04/step1_unringed.mif sub-10001/ses-04/step2_fsl.mif -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
 
 #step 3
 module purge
@@ -17,15 +17,15 @@ ml mamba
 source activate myENV
 ml ants
 
-dwi2mask sub-10001/ses-01/step2_fsl.mif sub-10001/ses-01/step3.1_tempmask.mif 
-maskfilter sub-10001/ses-01/step3.1_tempmask.mif dilate sub-10001/ses-01/step3.2_dialatemask.mif 
-dwibiascorrect ants sub-10001/ses-01/step2_fsl.mif  sub-10001/ses-01/step3.3_ants.mif
+dwi2mask sub-10001/ses-04/step2_fsl.mif sub-10001/ses-04/step3.1_tempmask.mif 
+maskfilter sub-10001/ses-04/step3.1_tempmask.mif dilate sub-10001/ses-04/step3.2_dialatemask.mif 
+dwibiascorrect ants sub-10001/ses-04/step2_fsl.mif  sub-10001/ses-04/step3.3_ants.mif
 mkdir dwinormalise
 mkdir dwi_input
 mkdir mask_input
 
-ln -sr sub-10001/ses-01/step3.3_ants.mif dwinormalise/dwi_input/10001v1.mif
-ln -sr sub-10001/ses-01/step3.2_dialatemask.mif dwinormalise/mask_input/10001v1.mif
+ln -sr sub-10001/ses-04/step3.3_ants.mif dwinormalise/dwi_input/10001v4.mif
+ln -sr sub-10001/ses-04/step3.2_dialatemask.mif dwinormalise/mask_input/10001v4.mif
 
 module purge
 ml mamba
@@ -42,8 +42,8 @@ for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 1001
             continue
         fi
         echo ">> Denoising and Giibs sub-${ID} ses-${n} - Step 1"
-        dwidenoise sub-10001/ses-01/dwi.mif"  sub-10001/ses-01/step1_denoised.mif"
-        mrdegibbs sub-10001/ses-01/step1_denoised.mif" sub-10001/ses-01/step1_unringed.mif"         
+        dwidenoise sub-10001/ses-04/dwi.mif"  sub-10001/ses-04/step1_denoised.mif"
+        mrdegibbs sub-10001/ses-04/step1_denoised.mif" sub-10001/ses-04/step1_unringed.mif"         
 
     done
 done
@@ -58,7 +58,7 @@ for ID in 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 1001
             continue
         fi
  echo ">> FSL preproc sub-${ID} ses-${n} - Step 2"
-dwifslpreproc sub-10001/ses-01/step1_unringed.mif" sub-10001/ses-01/step2_fsl.mif" -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
+dwifslpreproc sub-10001/ses-04/step1_unringed.mif" sub-10001/ses-04/step2_fsl.mif" -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
     done
 done
 
