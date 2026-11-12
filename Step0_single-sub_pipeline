@@ -3,16 +3,24 @@ ml mamba
 source activate myENV
 cd /scratch/cbayouth/Longitudinal FBA
 
-#Step 1
+# Step 1 #
 mrconvert sub-10147/ses-02/*/ sub-10147/ses-02/dwi.mif -vox 2 -coord 3 '0:1:32'
-dwidenoise sub-10147/ses-02/dwi.mif  sub-10147/ses-02/step1_denoised.mif
+dwidenoise sub-10147/ses-02/dwi.mif  sub-10147/ses-02/step1_denoised.mif -noise noise.mif 
+mrcalc dwi.mif step1_denoised.mif -subtract residual.mif
+## View residuals, it should be blurry as hell. If you can see gyri/sucli, indicates there may be noise induced errors, extend window ###
+mrview residual.mif
+### dwidenoise sub-10147/ses-02/dwi.mif  sub-10147/ses-02/step1_denoised.mif -extent 7 -noise noise.mif 
 mrdegibbs sub-10147/ses-02/step1_denoised.mif" sub-10147/ses-02/step1_unringed.mif"         
 
 #step 2
+## Get the reverse phase encoded scans for FUCKS sake, extract bval/bvec and combine ##
+### mrconvert sub-CON02_ses-preop_acq-PA_dwi.nii.gz PA.mif
+### mrconvert PA.mif -fslgrad sub-02_PA.bvec sub-02_PA.bval - | mrmath - mean mean_b0_PA.mif -axis 3
+### dwiextract sub-02_den.mif - -bzero | mrmath - mean mean_b0_AP.mif -axis 3
+### mrcat mean_b0_AP.mif mean_b0_PA.mif -axis 3 b0_pair.mif
 dwifslpreproc sub-10147/ses-02/step1_unringed.mif sub-10147/ses-02/step2_fsl.mif -rpe_none -pe_dir AP -readout_time 0.1 -eddy_options " --slm=linear "
 
 #step 3
-
 module purge
 ml mamba
 source activate myENV
