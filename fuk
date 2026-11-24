@@ -7,8 +7,8 @@ while IFS= read -r id || [ -n "$id" ]; do
   id=$(echo "$id" | tr -d '\r' | xargs)   # strip Windows line endings and whitespace
   [ -z "$id" ] && continue
 
-  src="source/zyc/dwi/sub-${id}/ses-01"
-  dest="sub-${id}"
+  src="/yzh1320/zyc/dwi/sub-${id}/ses-01"
+  dest="/cbayouth/try3_FA/sub-${id}"
 
   if [ -d "$src" ]; then
     mkdir -p "$dest"
@@ -16,4 +16,4 @@ while IFS= read -r id || [ -n "$id" ]; do
   else
     echo "Missing: $src" >&2
   fi
-done < OLD_IDs.txt
+done < cbayouth/OLD_IDs.txt
