@@ -11,7 +11,7 @@ DEST_BASE="/scratch/cbayouth/FSL"
 CTRL_DIR=".ssh/controlmasters"
 mkdir -p "$CTRL_DIR"
 CTRL_PATH="${CTRL_DIR}/%r@%h:%p"
-SSH_OPTS=(-o ControlMaster=auto -o ControlPath="$CTRL_PATH" -o ControlPersist=10m)
+SSH_OPTS=(-o ControlMaster=auto -o ControlPath="$CTRL_PATH" -o ControlPersist=40m)
 
 if [[ ! -f "$ID_FILE" ]]; then
     echo "ID file not found: $ID_FILE"
@@ -29,20 +29,26 @@ echo "Connected. Starting transfers..."
 while IFS= read -r ID || [[ -n "$ID" ]]; do
     [[ -z "$ID" ]] && continue
 
-    for n in 01 02 03 04 05 06; do
-        SRC="${SRC_BASE}/sub-${ID}/ses-01/dwi/alps/"
+    SRC="${SRC_BASE}/sub-${ID}/ses-01/dwi/alps"
+    DEST="${DEST_BASE}/sub-${ID}/ses-01/alps"
 
-        if compgen -G "$SRC" > /dev/null; then
-            DEST_DIR="${DEST_HOST}:${DEST_BASE}/sub-${ID}/ses-${n}"
-            echo ">> Copying sub-${ID}"
 
-            ssh -n "${SSH_OPTS[@]}" "${DEST_HOST}" "mkdir -p ${DEST_BASE}/sub-${ID}/ses-01"
-            scp -r "${SSH_OPTS[@]}" $SRC "${DEST_DIR}/" < /dev/null
-        else
-            echo "-- Skipping sub-${ID} ses-01 not found"
-        fi
-    done
+      if [[ ! -d "$SRC" ]]; then
+        echo "-- Skipping sub-${ID}: ses-01 alps not found"
+        continue
+    fi
+
+    echo ">> Copying sub-${ID}"
+    if ssh -n "${SSH_OPTS[@]}" "$DEST_HOST" "mkdir -p '${DEST}'" &&
+       rsync -a -e "ssh ${SSH_OPTS[*]}" "${SRC}/" "${DEST_HOST}:${DEST}/" < /dev/null; then
+        :
+    else
+        echo "!! FAILED: sub-${ID}"
+        failed+=("sub-${ID}")
+    fi
 done < "$ID_FILE"
+
+echo "Done."
 
 echo "Done. Closing master connection..."
 ssh "${SSH_OPTS[@]}" -O exit "${DEST_HOST}"
