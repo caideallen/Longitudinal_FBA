@@ -1,22 +1,4 @@
-while read -r id; do
-  [ -n "$id" ] && mkdir -p "sub-${id}"
-done < OLD_IDs.txt
-
-
-while IFS= read -r id || [ -n "$id" ]; do
-  id=$(echo "$id" | tr -d '\r' | xargs)   # strip Windows line endings and whitespace
-  [ -z "$id" ] && continue
-
-  src="yzha1320/zyc/dwi/sub-${id}/ses-01"
-  dest="cbayouth/try3_FA/sub-${id}"
-
-  if [ -d "$src" ]; then
-    mkdir -p "$dest"
-    cp -r "$src"/. "$dest"/
-  else
-    echo "Missing: $src" >&2
-  fi
-done < cbayouth/OLD_IDs.txt
+## I'll have to run these myse.f
 
 Missing: yzha1320/zyc/dwi/sub-10133/ses-01
 Missing: yzha1320/zyc/dwi/sub-10137/ses-01
