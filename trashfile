@@ -1,1 +1,24 @@
+## Random so I can stop having a million files everythere
+
+#QC command
 mrview step3.3_ants.mif -overlay.load step3.2_dialatemask.mif -overlay.opacity .2
+
+# How to do something from reading the ID list
+while read -r id; do
+  [ -n "$id" ] && mkdir -p "sub-${id}"
+done < OLD_IDs.txt
+
+while IFS= read -r id || [ -n "$id" ]; do
+  id=$(echo "$id" | tr -d '\r' | xargs)   # strip Windows line endings and whitespace
+  [ -z "$id" ] && continue
+
+  src="XX/zyc/dwi/sub-${id}/ses-01"
+  dest="me/try3_FA/sub-${id}"
+
+  if [ -d "$src" ]; then
+    mkdir -p "$dest"
+    cp -r "$src"/. "$dest"/
+  else
+    echo "Missing: $src" >&2
+  fi
+done < me/OLD_IDs.txt
