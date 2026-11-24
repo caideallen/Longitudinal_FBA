@@ -1,3 +1,19 @@
 while read -r id; do
   [ -n "$id" ] && mkdir -p "sub-${id}"
 done < OLD_IDs.txt
+
+
+while IFS= read -r id || [ -n "$id" ]; do
+  id=$(echo "$id" | tr -d '\r' | xargs)   # strip Windows line endings and whitespace
+  [ -z "$id" ] && continue
+
+  src="source/zyc/dwi/sub-${id}/ses-01"
+  dest="sub-${id}"
+
+  if [ -d "$src" ]; then
+    mkdir -p "$dest"
+    cp -r "$src"/. "$dest"/
+  else
+    echo "Missing: $src" >&2
+  fi
+done < OLD_IDs.txt
